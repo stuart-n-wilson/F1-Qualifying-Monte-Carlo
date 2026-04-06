@@ -12,6 +12,17 @@ This application uses Monte Carlo simulation and real F1 data to model Formula 1
 
 ---
 
+## 🎯 Motivation
+
+This project was built to explore how Monte Carlo simulation can be applied to real-world sports data, combining statistical modelling with domain knowledge of Formula 1.
+
+It demonstrates:
+- probabilistic modelling
+- simulation of multi-stage processes
+- building interactive data applications
+
+---
+
 ## ⚙️ How it works
 
 ### Simulating qualifying
@@ -59,12 +70,17 @@ F1-Qualifying-Monte-Carlo-Simulator/
 
 - Lap times are normally distributed.
 - Limited to 2018 onwards as previous data is unavailable.
+- Assumes independence between laps.
+- No external factors (weather, track evolution etc) are considered.
 
 ---
 
-## ▶️ How to Run
+## ▶️ How to Run Locally
 
-Try the application live [**here**](https://f1-qualifying-monte-carlo-simulator.streamlit.app/), or
-
-1. Download all the files and keep the same folder structure.
-2. Open a terminal and type `streamlit run Homepage.py` to run the app locally.
+1. Clone the repository  
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+3. Execute app:
+   ```bash
+   streamlit run Homepage.py
