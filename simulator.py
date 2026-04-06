@@ -193,24 +193,12 @@ def get_position_probability(position_counts, n=500):
 
     return position_probabilities
 
-def monte_carlo_qualifying(gp, year, n=500):
+def monte_carlo_qualifying(session, n=500):
     '''
     Input is GP name, year, and number of simulations n.
     Returns dataframe of drivers with probabilities for each position.
     '''
-    f1.set_log_level('ERROR')
     
-    if n < 1:
-        raise ValueError('n must be a positive integer.')
-    
-    if year < 2018:
-        raise ValueError('Only years 2018 onwards are supported.')
-    
-    f1.set_log_level('ERROR')
-    
-    session = f1.get_session(year, gp, 'Q')
-    session.load()
-
     position_counts = qualifying_MC(session, n)
     position_probabilities = get_position_probability(position_counts, n)
 

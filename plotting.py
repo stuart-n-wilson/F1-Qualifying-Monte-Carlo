@@ -19,30 +19,17 @@ def f1_plot_theme():
     plt.rcParams["xtick.color"] = "#a4a4a4"
     plt.rcParams["ytick.color"] = "#a4a4a4"
 
-def position_probability_plot(gp, year, pos=1, n=500):
+def position_probability_plot(df, session, pos=1, n=500):
     '''
-    Takes in gp, year, qualifying position (default is pole) and number of simulations.
-    Returns probability distribution fig for given position.
+    Input: df of position probabilities, session, qualifying position (default is pole) and number of simulations.
+    
+    Output: probability distribution fig for given position.
     '''
-    
-    f1.set_log_level('ERROR')
-
-    if n < 1:
-        raise ValueError('n must be a positive integer.')
-    
-    if year < 2018:
-        raise ValueError('Only years 2018 onwards are supported.')
-
-
-    session = f1.get_session(year, gp, 'Q')
-    session.load()
 
     driver_colours = {
         driver: f"#{colour}"
         for driver, colour in session.results.set_index('Abbreviation')['TeamColor'].items()
     }
-
-    df = monte_carlo_qualifying(gp, year, n)
 
     data = df[pos].reset_index()
     data.columns = ["Driver", "Probability"]
@@ -63,7 +50,7 @@ def position_probability_plot(gp, year, pos=1, n=500):
     sns.despine(ax=ax)
 
     ax.set_title(
-        f"{gp} {year} P{pos} Qualifying Probability Distribution - {n} simulations",
+        f"{session.event.EventName} {session.event.year} P{pos} Qualifying Probability Distribution - {n} simulations",
         fontsize=16,
         weight="bold",
         pad=15
@@ -75,32 +62,20 @@ def position_probability_plot(gp, year, pos=1, n=500):
 
     return fig
 
-def expected_position(gp, year, driver, n=500):
+def expected_position(df, session, driver, abbr, n=500):
     '''
-    Input: gp, year, driver abbreviation, number of simulations.
+    Input: df of position probabilities, gp, year, driver abbreviation, number of simulations.
 
     Output: Driver qualifying position probability distribution fig.
     '''
-    f1.set_log_level('ERROR')
-
-    if n < 1:
-        raise ValueError('n must be a positive integer.')
-    
-    if year < 2018:
-        raise ValueError('Only years 2018 onwards are supported.')
-        
-
-    session = f1.get_session(year, gp, 'Q')
-    session.load()
 
     driver_colours = {
-        driver: f"#{colour}"
-        for driver, colour in session.results.set_index('Abbreviation')['TeamColor'].items()
+        abbr: f"#{colour}"
+        for abbr, colour in session.results.set_index('Abbreviation')['TeamColor'].items()
     }
 
-    df = monte_carlo_qualifying(gp, year, n)
 
-    row = df.loc[driver]
+    row = df.loc[abbr]
     positions = sorted(row.index.astype(int))
 
     probabilities = row.values
@@ -112,12 +87,12 @@ def expected_position(gp, year, driver, n=500):
     ax.bar(
         positions,
         probabilities,
-        color = driver_colours[driver]
+        color = driver_colours[abbr]
     )
 
     sns.despine(ax=ax)
 
-    ax.set_title(f"{gp} {year} {driver} Qualifying Position Probability Distribution - {n} simulations", fontsize=16, weight="bold", pad=15)
+    ax.set_title(f"{session.event.EventName} {session.event.year} {driver} Qualifying Position Probability Distribution - {n} simulations", fontsize=16, weight="bold", pad=15)
     ax.set_xlabel('Position', fontsize=12, weight="bold", labelpad=15)
     ax.set_ylabel('Probability', fontsize=12, weight="bold", labelpad=15)
     ax.set_xticks(positions)
