@@ -64,6 +64,7 @@ st.subheader("About")
 
 st.markdown("- Built using Python, FastF1, Plotly and Streamlit.")
 st.markdown("- Entirely my own work as a Data Science project.")
+st.markdown("- Check this app out on GitHub to see what makes it tick: https://github.com/stuart-n-wilson/F1-Qualifying-Monte-Carlo-Simulator")
 st.markdown("- Feel free to get in touch here (I am actively looking for Junior Data Science roles...): https://www.linkedin.com/in/stuart-n-wilson/")
 
 
