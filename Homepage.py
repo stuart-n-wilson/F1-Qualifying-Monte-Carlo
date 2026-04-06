@@ -18,6 +18,7 @@ This application simulates Formula 1 qualifying sessions using real session data
 
 - Each simulation runs Q1, Q2 and Q3, with eliminations at each stage.
 - Supports every Grand Prix from 2018 to present.
+- Automatically generates visualisations with team colours.
 """)
 
 
