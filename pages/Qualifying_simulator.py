@@ -18,7 +18,7 @@ st.divider()
 st.subheader("Choose a Qualifying session")
 
 # User inputs to choose session ---
-year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2025)
+year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
