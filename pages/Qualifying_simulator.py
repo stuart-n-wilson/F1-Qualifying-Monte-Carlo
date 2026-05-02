@@ -63,6 +63,11 @@ if st.button("Run"):
         st.session_state.n = n
         st.session_state.run_year = year
         st.session_state.run_gp = gp
+    
+        # Temporary debug - remove after testing
+        st.write("Laps loaded:", len(fresh_session.laps))
+        st.write("Results loaded:", len(fresh_session.results))
+        st.stop()
 
 st.divider()
 
