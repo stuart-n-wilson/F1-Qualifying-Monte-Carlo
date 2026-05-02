@@ -46,8 +46,6 @@ It demonstrates:
 - A heatmap of probabilities is generated from the probabilities dataframe.
 - The user can choose a position, or driver to focus on, and then probability distributions are generated accordingly.
 - Each plot automatically assigns team colours to drivers.
-- Assumes independence between laps.
-- No external factors (weather, track evolution etc) are considered.
 
 ---
 
