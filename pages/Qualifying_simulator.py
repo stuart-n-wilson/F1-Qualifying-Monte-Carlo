@@ -23,13 +23,27 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session and cache ---
+
+import os
+
 @st.cache_resource(show_spinner="Downloading the data...")
 def load_session(year, gp):
     f1.set_log_level('ERROR')
+    cache_dir = "/tmp/fastf1_cache"
+    os.makedirs(cache_dir, exist_ok=True)
+    f1.Cache.enable_cache(cache_dir)
     session = f1.get_session(year, gp, 'Q')
     session.load()
     return session
+
+
+# Load session and cache ---
+#@st.cache_resource(show_spinner="Downloading the data...")
+#def load_session(year, gp):
+ #   f1.set_log_level('ERROR')
+  #  session = f1.get_session(year, gp, 'Q')
+   # session.load()
+    #return session
 
 session = load_session(year, gp)
 
