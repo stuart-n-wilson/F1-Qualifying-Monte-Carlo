@@ -6,9 +6,13 @@ from datetime import datetime as dt
 from simulator import monte_carlo_qualifying, simulate_grid
 from plotting import position_probability_plot, expected_position, create_heatmap
 from analysis import compare_grid
+import os
 
 f1.set_log_level('ERROR')
 
+# Enable cache at module level
+os.makedirs("/tmp/fastf1_cache", exist_ok=True) # AI
+f1.Cache.enable_cache("/tmp/fastf1_cache") # AI
 
 # Title section ---
 st.title('F1 Qualifying Position Simulator')
@@ -24,14 +28,9 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 
-import os
-
 @st.cache_resource(show_spinner="Downloading the data...")
 def load_session(year, gp):
     f1.set_log_level('ERROR')
-    cache_dir = "/tmp/fastf1_cache"
-    os.makedirs(cache_dir, exist_ok=True)
-    f1.Cache.enable_cache(cache_dir)
     session = f1.get_session(year, gp, 'Q')
     session.load()
     return session
