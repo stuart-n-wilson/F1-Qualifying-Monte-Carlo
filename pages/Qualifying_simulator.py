@@ -27,12 +27,11 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session and cache ---
-# @st.cache_resource(show_spinner="Downloading the data...")
+# Load session 
 def load_session(year, gp):
-    # f1.set_log_level('ERROR')
-    session = f1.get_session(year, gp, 'Q')
-    session.load()
+    with st.spinner("Downloading the data... this may take a minute!"):
+        session = f1.get_session(year, gp, 'Q')
+        session.load()
     return session
 
 session = load_session(year, gp)
