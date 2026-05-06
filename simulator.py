@@ -15,7 +15,11 @@ def create_driver_session_stats(session):
     if not hasattr(session, "_laps"):
         session.load(laps=True, telemetry=False, weather=False)
 
-    q1, q2, q3 = session.laps.split_qualifying_sessions()
+    try:
+        q1, q2, q3 = session.laps.split_qualifying_sessions()
+    except (f1.core.DataNotLoadedError, AttributeError):
+        session.load(laps=True, telemetry=False, weather=False)
+        q1, q2, q3 = session.laps.split_qualifying_sessions()
 
     # List of all drivers in qualifying session.
     all_drivers = pd.Index(
