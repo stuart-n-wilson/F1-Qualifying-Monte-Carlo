@@ -28,7 +28,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 def load_session(year, gp):
     f1.set_log_level('ERROR')
     session = f1.get_session(year, gp, 'Q')
-    session.load(laps=True)
+    session.load()
     return session
 
 session = load_session(year, gp)
