@@ -27,14 +27,58 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session 
-# @st.cache_data(show_spinner="Downloading the data...")
-def load_session(year, gp):
+
+
+# --- THE "STAY WORKING OVERNIGHT" FIX ---
+
+@st.cache_data(show_spinner="Downloading/Loading Data...")
+def get_clean_data(year, gp):
     session = f1.get_session(year, gp, 'Q')
     session.load(telemetry=False, weather=False, messages=False)
-    return session
+    
+    # If the API blocked us, this check stops the crash right here
+    if not hasattr(session, 'laps') or len(session.laps) == 0:
+        return None 
 
-session = load_session(year, gp)
+    # We return a dictionary of the actual data frames. 
+    # This is "picklable" and won't cause the NoneType error.
+    return {
+        "laps": session.laps,
+        "results": session.results,
+        "drivers": session.drivers,
+        "event_name": session.event['EventName']
+    }
+
+# 1. Get the raw data
+data = get_clean_data(year, gp)
+
+# 2. Check if we were banned/blocked
+if data is None:
+    st.error("⚠️ F1 API is currently rate-limiting this server. The data could not be loaded. Please try a different race or wait 30 minutes.")
+    st.stop()
+
+# 3. Create a "Fake" session object for your existing functions
+# This allows the rest of your code to stay EXACTLY the same
+class SimpleSession:
+    def __init__(self, d):
+        self.laps = d['laps']
+        self.results = d['results']
+        self.drivers = d['drivers']
+        self.event = {'EventName': d['event_name']}
+    def get_driver(self, identifier):
+        # Keeps your selectbox logic working
+        return self.results.loc[self.results['Abbreviation'] == identifier].iloc[0]
+
+session = SimpleSession(data)
+# ----------------------------------------
+# Load session 
+# @st.cache_data(show_spinner="Downloading the data...")
+# def load_session(year, gp):
+#     session = f1.get_session(year, gp, 'Q')
+#     session.load(telemetry=False, weather=False, messages=False)
+#     return session
+
+# session = load_session(year, gp)
 
 # Additional user inputs ---
 n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=500)
