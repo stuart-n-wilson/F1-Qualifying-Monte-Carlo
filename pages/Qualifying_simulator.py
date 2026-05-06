@@ -29,47 +29,25 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 
-# --- THE "STAY WORKING OVERNIGHT" FIX ---
+# --- THE OVERNIGHT STABILITY FIX ---
 
-@st.cache_data(show_spinner="Downloading/Loading Data...")
-def get_clean_data(year, gp):
-    session = f1.get_session(year, gp, 'Q')
-    session.load(telemetry=False, weather=False, messages=False)
-    
-    # If the API blocked us, this check stops the crash right here
-    if not hasattr(session, 'laps') or len(session.laps) == 0:
-        return None 
+@st.cache_resource(show_spinner="Loading F1 data...")
+def load_session(year, gp):
+    # Use cache_resource for complex F1 objects to avoid the 'NoneType' crash
+    s = f1.get_session(year, gp, 'Q')
+    s.load(telemetry=False, weather=False, messages=False)
+    return s
 
-    # We return a dictionary of the actual data frames. 
-    # This is "picklable" and won't cause the NoneType error.
-    return {
-        "laps": session.laps,
-        "results": session.results,
-        "drivers": session.drivers,
-        "event_name": session.event['EventName']
-    }
+session = load_session(year, gp)
 
-# 1. Get the raw data
-data = get_clean_data(year, gp)
-
-# 2. Check if we were banned/blocked
-if data is None:
-    st.error("⚠️ F1 API is currently rate-limiting this server. The data could not be loaded. Please try a different race or wait 30 minutes.")
+# IMPORTANT: Check if data is actually there before the rest of the app runs
+try:
+    if session.laps is None or len(session.laps) == 0:
+        st.error("⚠️ The F1 API is currently rate-limiting this server or data is missing. Please try again later.", icon="🚨")
+        st.stop()
+except Exception:
+    st.error("⚠️ Data connection failed. The F1 API is likely blocking this IP address.", icon="🚨")
     st.stop()
-
-# 3. Create a "Fake" session object for your existing functions
-# This allows the rest of your code to stay EXACTLY the same
-class SimpleSession:
-    def __init__(self, d):
-        self.laps = d['laps']
-        self.results = d['results']
-        self.drivers = d['drivers']
-        self.event = {'EventName': d['event_name']}
-    def get_driver(self, identifier):
-        # Keeps your selectbox logic working
-        return self.results.loc[self.results['Abbreviation'] == identifier].iloc[0]
-
-session = SimpleSession(data)
 # ----------------------------------------
 # Load session 
 # @st.cache_data(show_spinner="Downloading the data...")
