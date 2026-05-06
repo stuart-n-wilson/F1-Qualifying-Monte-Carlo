@@ -7,7 +7,7 @@ st.sidebar.success('Please select a page above.')
 st.title('🏎️ F1 Qualifying Simulator')
 st.markdown("Estimate the probability of every driver qualifying in every position.")
 st.markdown("Simulate Formula 1 qualifying sessions using Monte Carlo methods.")
-st.info("Go to the Qualifying simulator page (on the left) to get started.")
+st.info("Go to the Qualifying simulator page (on the left) to get started.", icon="ℹ️")
 
 st.divider()
 
