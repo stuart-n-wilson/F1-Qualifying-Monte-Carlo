@@ -2,18 +2,12 @@
 import streamlit as st
 import fastf1 as f1
 import pandas as pd
-import os
 from datetime import datetime as dt
-from simulator import monte_carlo_qualifying, simulate_grid
-from plotting import position_probability_plot, expected_position, create_heatmap
-from analysis import compare_grid
+from simulation.simulator import run_full_monte_carlo
+from utils.plotting import position_probability_plot, expected_position, colour_grid_change
+from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid
 
 f1.set_log_level('ERROR')
-
-# Enable FastF1 Cache for Streamlit
-if not os.path.exists('cache'):
-    os.makedirs('cache')
-f1.Cache.enable_cache('cache')
 
 
 # Title section ---
@@ -49,10 +43,20 @@ st.subheader("Run the simulation")
 # Run simulation ---
 if st.button("Run"):
     with st.spinner("Running the simulation..."):
-        st.session_state.df = monte_carlo_qualifying(session, n)
-        st.session_state.n = n
-        st.session_state.run_year = year
-        st.session_state.run_gp = gp
+
+        df, simulated_grid = run_full_monte_carlo(session, n)
+        comparison_grid = compare_grid(simulated_grid, session)
+        stats = get_probability_stats(df, year)
+
+        st.session_state.update({
+            "df": df,
+            "n": n,
+            "run_year": year,
+            "run_gp": gp,
+            "simulated_grid": simulated_grid,
+            "comparison_grid": comparison_grid,
+            "stats": stats
+        })
 
 st.divider()
 
@@ -64,12 +68,19 @@ if (
 
     st.subheader("Simulation Results")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Simulated results", "Position Analysis","Driver Analysis", "Probabilities dataframe", "Probabilties heatmap"])
+    # Call variables from session state, usuable across all tabs.
+    df = st.session_state.df
+    comparison_grid = st.session_state.comparison_grid
+    stats = st.session_state.stats
+    n = st.session_state.n
+
+    tab1, tab2, tab3, tab4 = st.tabs(["Simulated results", "Position Analysis","Driver Analysis", "Data"])
 
     # Simulated results
     with tab1:
-        st.dataframe(compare_grid(simulate_grid(st.session_state.df), session))
-        st.info("A real position may be None if the driver did not qualify.", icon="ℹ️")
+        # Use df.copy() so changes not saved to df.
+        st.dataframe(colour_grid_change(comparison_grid.copy()))
+        st.info("A real position may be 'None' if the driver did not qualify.", icon="ℹ️")
 
     # Position probability distribution plot
     with tab2:
@@ -99,17 +110,14 @@ if (
         fig = expected_position(st.session_state.df, session, driver, abbr, st.session_state.n)
         st.plotly_chart(fig, use_container_width=True)
 
-    # Dataframe of probabilities
+    # Data
     with tab4:
         # Rename column headers to P1, P2 etc.
+        st.markdown("This table shows the probability (0 - 1) of a driver qualifying in each position.")
         st.dataframe(st.session_state.df.rename(columns=lambda x: f"P{x}"))
-        st.info("This table shows the probability (0 - 1) of a driver qualifying in each position.", icon="ℹ️")
 
-    # Probabilities heatmap
-    with tab5:
-        fig = create_heatmap(st.session_state.df, session)
-        st.plotly_chart(fig, use_container_width=True)
-        st.info("This is the Probabilties dataframe as a heatmap.", icon="ℹ️")
+        st.markdown("This table contains statistics based on the position probabilities table, and simulated results.")
+        st.dataframe(merge_stats_comparison_grid(stats, comparison_grid))
 
 
 # Display message if session changes that simulation must be rerun.
