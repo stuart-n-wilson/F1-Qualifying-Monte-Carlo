@@ -27,34 +27,14 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session and cache ---
+# Load session 
 def load_session(year, gp):
-    with st.spinner("Loading F1 data (this will be quick if cached)..."):
-        try:
-            session = f1.get_session(year, gp, 'Q')
-            session.load()
-            
-            # Simply touching session.laps will trigger an error if the API blocked us, 
-            # which will safely bump us down to the 'except' block below.
-            _ = session.laps 
-            
-            return session
-            
-        except Exception as e:
-            st.error("⚠️ Failed to load lap data. The F1 API might be temporarily blocking our server, or data is unavailable for this session. Please try again later.", icon="🚨")
-            st.stop()
+    with st.spinner("Downloading the data... this may take a minute!"):
+         session = f1.get_session(year, gp, 'Q')
+         session.load()
+    return session
 
-# Call the function directly (NO session_state!)
 session = load_session(year, gp)
-
-# # Load session 
-# def load_session(year, gp):
-#     with st.spinner("Downloading the data... this may take a minute!"):
-#         session = f1.get_session(year, gp, 'Q')
-#         session.load()
-#     return session
-
-# session = load_session(year, gp)
 
 # Additional user inputs ---
 n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=500)
