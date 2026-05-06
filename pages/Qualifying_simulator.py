@@ -27,52 +27,14 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-
-
-# --- EMERGENCY STABILITY FIX (NO STREAMLIT CACHING) ---
-
-def load_session(year, gp):
-    # We do NOT use @st.cache decorators here because they cause the NoneType crash.
-    # FastF1's own "fastf1_cache" folder handles the speed for us.
-    try:
-        session = f1.get_session(year, gp, 'Q')
-        session.load(telemetry=False, weather=False, messages=False)
-        
-        # Verify the data actually loaded
-        if session.laps is None or len(session.laps) == 0:
-            st.error("⚠️ The F1 API returned no data for this session. It might be rate-limited or the session hasn't happened yet.")
-            st.stop()
-            
-        return session
-    except Exception as e:
-        st.error(f"⚠️ Critical Loading Error: {e}")
-        st.info("Try clicking 'Clear Local Cache' at the bottom of the sidebar.")
-        st.stop()
-
-# Load it fresh every time (FastF1 will pull from the folder, so it's still fast)
-session = load_session(year, gp)
-
-# --- SIDEBAR TOOLS ---
-with st.sidebar:
-    st.divider()
-    if st.button("Clear Local Cache"):
-        # This deletes the local folder if it becomes corrupted
-        import shutil
-        if os.path.exists("fastf1_cache"):
-            shutil.rmtree("fastf1_cache")
-            os.makedirs("fastf1_cache", exist_ok=True)
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        st.success("Cache cleared! Reload the page.")
-# ----------------------------------------
 # Load session 
-# @st.cache_data(show_spinner="Downloading the data...")
-# def load_session(year, gp):
-#     session = f1.get_session(year, gp, 'Q')
-#     session.load(telemetry=False, weather=False, messages=False)
-#     return session
+@st.cache_data(show_spinner="Downloading the data...")
+def load_session(year, gp):
+    session = f1.get_session(year, gp, 'Q')
+    session.load(telemetry=False, weather=False, messages=False)
+    return session
 
-# session = load_session(year, gp)
+session = load_session(year, gp)
 
 # Additional user inputs ---
 n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=500)
