@@ -2,12 +2,16 @@
 import streamlit as st
 import fastf1 as f1
 import pandas as pd
+import os
 from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
 from utils.plotting import position_probability_plot, expected_position, colour_grid_change
 from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid
 
-f1.set_log_level('ERROR')
+os.makedirs("fastf1_cache", exist_ok=True)
+f1.Cache.enable_cache("fastf1_cache")
+
+# f1.set_log_level('ERROR')
 
 
 # Title section ---
@@ -26,7 +30,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 # Load session and cache ---
 @st.cache_resource(show_spinner="Downloading the data...")
 def load_session(year, gp):
-    f1.set_log_level('ERROR')
+    # f1.set_log_level('ERROR')
     session = f1.get_session(year, gp, 'Q')
     session.load()
     return session
