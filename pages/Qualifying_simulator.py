@@ -27,14 +27,45 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session 
-def load_session(year, gp):
+# Load session and cache ---
+def get_session(year, gp):
+    # 1. Check if we ALREADY loaded this exact session into memory
+    if "f1_session" in st.session_state and st.session_state.get("f1_year") == year and st.session_state.get("f1_gp") == gp:
+        return st.session_state["f1_session"]
+    
+    # 2. If it's a new selection, show the spinner and load it
     with st.spinner("Downloading the data... this may take a minute!"):
-        session = f1.get_session(year, gp, 'Q')
-        session.load()
-    return session
+        try:
+            session = f1.get_session(year, gp, 'Q')
+            session.load()
+            
+            # Rate-limit safety check
+            if not hasattr(session, '_laps') or session._laps is None or len(session.laps) == 0:
+                st.error("⚠️ The F1 Data API is currently rate-limiting our server. Please try a different GP that might be cached, or try again in a few minutes.", icon="🚨")
+                st.stop()
+                
+            # Save it to session_state so we don't have to show the spinner again
+            st.session_state["f1_session"] = session
+            st.session_state["f1_year"] = year
+            st.session_state["f1_gp"] = gp
+            
+            return session
+            
+        except Exception as e:
+            st.error("⚠️ An error occurred connecting to the F1 database. Please try again later.", icon="🚨")
+            st.stop()
 
-session = load_session(year, gp)
+# Call the new smart function
+session = get_session(year, gp)
+
+# # Load session 
+# def load_session(year, gp):
+#     with st.spinner("Downloading the data... this may take a minute!"):
+#         session = f1.get_session(year, gp, 'Q')
+#         session.load()
+#     return session
+
+# session = load_session(year, gp)
 
 # Additional user inputs ---
 n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=500)
