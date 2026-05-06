@@ -28,7 +28,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 # Load session and cache ---
-@st.cache_resource(show_spinner="Downloading the data...")
+# @st.cache_resource(show_spinner="Downloading the data...")
 def load_session(year, gp):
     # f1.set_log_level('ERROR')
     session = f1.get_session(year, gp, 'Q')
