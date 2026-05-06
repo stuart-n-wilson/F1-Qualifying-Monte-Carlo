@@ -29,25 +29,41 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 
-# --- THE OVERNIGHT STABILITY FIX ---
+# --- EMERGENCY STABILITY FIX (NO STREAMLIT CACHING) ---
 
-@st.cache_resource(show_spinner="Loading F1 data...")
 def load_session(year, gp):
-    # Use cache_resource for complex F1 objects to avoid the 'NoneType' crash
-    s = f1.get_session(year, gp, 'Q')
-    s.load(telemetry=False, weather=False, messages=False)
-    return s
+    # We do NOT use @st.cache decorators here because they cause the NoneType crash.
+    # FastF1's own "fastf1_cache" folder handles the speed for us.
+    try:
+        session = f1.get_session(year, gp, 'Q')
+        session.load(telemetry=False, weather=False, messages=False)
+        
+        # Verify the data actually loaded
+        if session.laps is None or len(session.laps) == 0:
+            st.error("⚠️ The F1 API returned no data for this session. It might be rate-limited or the session hasn't happened yet.")
+            st.stop()
+            
+        return session
+    except Exception as e:
+        st.error(f"⚠️ Critical Loading Error: {e}")
+        st.info("Try clicking 'Clear Local Cache' at the bottom of the sidebar.")
+        st.stop()
 
+# Load it fresh every time (FastF1 will pull from the folder, so it's still fast)
 session = load_session(year, gp)
 
-# IMPORTANT: Check if data is actually there before the rest of the app runs
-try:
-    if session.laps is None or len(session.laps) == 0:
-        st.error("⚠️ The F1 API is currently rate-limiting this server or data is missing. Please try again later.", icon="🚨")
-        st.stop()
-except Exception:
-    st.error("⚠️ Data connection failed. The F1 API is likely blocking this IP address.", icon="🚨")
-    st.stop()
+# --- SIDEBAR TOOLS ---
+with st.sidebar:
+    st.divider()
+    if st.button("Clear Local Cache"):
+        # This deletes the local folder if it becomes corrupted
+        import shutil
+        if os.path.exists("fastf1_cache"):
+            shutil.rmtree("fastf1_cache")
+            os.makedirs("fastf1_cache", exist_ok=True)
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        st.success("Cache cleared! Reload the page.")
 # ----------------------------------------
 # Load session 
 # @st.cache_data(show_spinner="Downloading the data...")
