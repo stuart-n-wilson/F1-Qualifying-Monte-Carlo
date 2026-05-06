@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import fastf1 as f1
 from scipy.optimize import linear_sum_assignment
 
 def create_driver_session_stats(session):
