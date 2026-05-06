@@ -2,12 +2,18 @@
 import streamlit as st
 import fastf1 as f1
 import pandas as pd
+import os
 from datetime import datetime as dt
 from simulator import monte_carlo_qualifying, simulate_grid
 from plotting import position_probability_plot, expected_position, create_heatmap
 from analysis import compare_grid
 
 f1.set_log_level('ERROR')
+
+# Enable FastF1 Cache for Streamlit
+if not os.path.exists('cache'):
+    os.makedirs('cache')
+f1.Cache.enable_cache('cache')
 
 
 # Title section ---
