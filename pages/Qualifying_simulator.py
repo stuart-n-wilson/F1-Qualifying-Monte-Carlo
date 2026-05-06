@@ -28,35 +28,24 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 # Load session and cache ---
-def get_session(year, gp):
-    # 1. Check if we ALREADY loaded this exact session into memory
-    if "f1_session" in st.session_state and st.session_state.get("f1_year") == year and st.session_state.get("f1_gp") == gp:
-        return st.session_state["f1_session"]
-    
-    # 2. If it's a new selection, show the spinner and load it
-    with st.spinner("Downloading the data... this may take a minute!"):
+def load_session(year, gp):
+    with st.spinner("Loading F1 data (this will be quick if cached)..."):
         try:
             session = f1.get_session(year, gp, 'Q')
             session.load()
             
-            # Rate-limit safety check
-            if not hasattr(session, '_laps') or session._laps is None or len(session.laps) == 0:
-                st.error("⚠️ The F1 Data API is currently rate-limiting our server. Please try a different GP that might be cached, or try again in a few minutes.", icon="🚨")
-                st.stop()
-                
-            # Save it to session_state so we don't have to show the spinner again
-            st.session_state["f1_session"] = session
-            st.session_state["f1_year"] = year
-            st.session_state["f1_gp"] = gp
+            # Simply touching session.laps will trigger an error if the API blocked us, 
+            # which will safely bump us down to the 'except' block below.
+            _ = session.laps 
             
             return session
             
         except Exception as e:
-            st.error("⚠️ An error occurred connecting to the F1 database. Please try again later.", icon="🚨")
+            st.error("⚠️ Failed to load lap data. The F1 API might be temporarily blocking our server, or data is unavailable for this session. Please try again later.", icon="🚨")
             st.stop()
 
-# Call the new smart function
-session = get_session(year, gp)
+# Call the function directly (NO session_state!)
+session = load_session(year, gp)
 
 # # Load session 
 # def load_session(year, gp):
