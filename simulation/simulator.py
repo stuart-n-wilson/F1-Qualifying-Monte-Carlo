@@ -21,7 +21,8 @@ def create_driver_session_stats(session):
 
     # Helper function
     def extract_stats(laps_df):
-        laps = laps_df.pick_quicklaps().loc[lambda df: ~df["Deleted"]].copy()
+        # laps = laps_df.pick_quicklaps().loc[lambda df: ~df["Deleted"]].copy()
+        laps = laps_df.pick_quicklaps().loc[lambda df: ~df["Deleted"].fillna(False)].copy()
         laps['LapTimeSeconds'] = laps["LapTime"].dt.total_seconds()
         return laps.groupby("Driver")["LapTimeSeconds"].agg(["mean", "std", "count"])
 
