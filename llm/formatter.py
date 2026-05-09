@@ -1,5 +1,4 @@
 import pandas as pd
-import pprint
 
 _SYSTEM_PROMPT_TEMPLATE = """
 You are an expert F1 analyst assistant for an F1 Qualifying Simulator application. \
@@ -114,7 +113,6 @@ def build_system_prompt(stats_dict, session):
         str: The complete system prompt, ready to be passed to the LLM as
              the system parameter.
     """
-    pprint.pprint(stats_dict['ANT'])
     
     event=session.event.EventName
     year = session.event.year
