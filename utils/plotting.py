@@ -1,18 +1,40 @@
 import plotly.graph_objects as go
+import pandas as pd
 
-def position_probability_plot(df, session, pos=1, n=500):
-    '''
-    Input: df of position probabilities, session, qualifying position (default is pole) and number of simulations.
+def _get_driver_colours(session):
+    """ Helper function to create a mapping of driver abbreviations to team colours.
 
-    Output: probability distribution fig for given position.
-    '''
+    Extracts team colours from the FastF1 session results and ensures they are 
+    formatted as hex strings for Plotly marker compatibility.
+
+    Args:
+        session: FastF1 session object.
+
+    Returns:
+        dict: A dictionary where keys are driver abbreviations (e.g., 'HAM') 
+              and values are hex color strings (e.g., '#00d2be').
+    """
+    return {abbr: f"#{colour}" for abbr, colour in 
+            session.results.set_index('Abbreviation')['TeamColor'].items()}
+
+def position_probability_plot(df, session, n, pos=1): 
+    """ Creates a bar chart showing driver probabilities for a specific grid position.
+
+    Visualises which drivers are most likely to qualify in the selected position (e.g. P1).
+    Sorted from highest to lowest probability.
+
+    Args:
+        df: pd.DataFrame of position probabilities from the Monte Carlo simulation.
+        session: FastF1 session object.
+        n: Integer representing the number of simulations performed.
+        pos: Integer representing the qualifying position to plot (default is 1).
+        
+    Returns:
+        go.Figure: A Plotly bar figure showing probability distribution for the given position.
+    """
     driver_names = session.results.set_index('Abbreviation')['FullName'].to_dict()
+    driver_colours = _get_driver_colours(session)
     
-    driver_colours = {
-        driver: f"#{colour}"
-        for driver, colour in session.results.set_index('Abbreviation')['TeamColor'].items()
-    }
-
     data = df[pos].reset_index()
     data.columns = ["Driver", "Probability"]
     data = data.sort_values("Probability", ascending=False)
@@ -53,19 +75,22 @@ def position_probability_plot(df, session, pos=1, n=500):
 
     return fig
 
+def expected_position(df, session, driver, abbr, n):
+    """ Creates a bar chart of a specific driver's probability across all positions.
 
-def expected_position(df, session, driver, abbr, n=500):
-    '''
-    Input: df of position probabilities, session, driver name, driver abbreviation, n simulations.
+    Provides a visual position probability distribution for each driver.
 
-    Output: Bar plot of driver's position probabilities.
-    '''
+    Args:
+        df: pd.DataFrame of position probabilities from the Monte Carlo simulation.
+        session: FastF1 session object.
+        driver: String containing the full name of the driver.
+        abbr: String containing the driver's three-letter abbreviation.
+        n: Integer representing the number of simulations performed.
 
-    # Driver colours
-    driver_colours = {
-        abbr: f"#{colour}"
-        for abbr, colour in session.results.set_index('Abbreviation')['TeamColor'].items()
-    }
+    Returns:
+        go.Figure: A Plotly bar figure showing the driver's probability per position.
+    """
+    driver_colours = _get_driver_colours(session)
 
     # Data
     row = df.loc[abbr]
@@ -82,7 +107,6 @@ def expected_position(df, session, driver, abbr, n=500):
         hovertemplate="Position: %{x}<br>Probability (%): %{y:.1f}%<extra></extra>"
     )
 
-
     # Titles and such
     fig.update_layout(
         title={
@@ -98,7 +122,6 @@ def expected_position(df, session, driver, abbr, n=500):
         margin=dict(t=90)
     )
 
-
     fig.update_xaxes(
         tickmode="array",
         tickvals=positions,
@@ -107,25 +130,6 @@ def expected_position(df, session, driver, abbr, n=500):
 
     return fig
 
-def colour_grid_change(df):
-    """
-    Input: 
-
-    Indicates position gain in green with up arrow, and lost positions in red with down arrow.
-    Display floats as int.
-
-    Output: formatted/coloured df.
-    """
-
-    # Add arrows to indicate position change direction.
-    df['Position change'] = df["Position change"].apply(lambda x: f"↑ {x:.0f}" if x > 0 else(f"↓ {abs(x):.0f}" if x < 0 else "0"))
-
-    df_coloured = df.style \
-        .format({'Simulated position': '{:.0f}', 'Real position': '{:.0f}'}) \
-        .map(
-            lambda val: "color: green" if "↑" in val else ("color: red" if "↓" in val else ""),
-            subset=["Position change"]
-            )
-    
-    return df_coloured
-    
+def sankey_position_map():
+    # Coming soon...
+    pass
