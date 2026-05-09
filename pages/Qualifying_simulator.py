@@ -7,6 +7,9 @@ from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
 from utils.plotting import position_probability_plot, expected_position
 from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid, colour_grid_change
+from llm.context import build_llm_context
+from llm.formatter import build_system_prompt
+from llm.api import get_chat_response
 
 os.makedirs("fastf1_cache", exist_ok=True)
 f1.Cache.enable_cache("fastf1_cache")
@@ -29,7 +32,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 @st.cache_data(show_spinner="Downloading the data...")
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
-    session.load(telemetry=False, weather=False, messages=False)
+    session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
 session = load_session(year, gp)
@@ -48,6 +51,7 @@ if st.button("Run"):
         df, simulated_grid = run_full_monte_carlo(session, n)
         comparison_grid = compare_grid(simulated_grid, session)
         stats = get_probability_stats(df, year)
+        stats_dict = build_llm_context(df, simulated_grid, session, year)
 
         st.session_state.update({
             "df": df,
@@ -56,7 +60,9 @@ if st.button("Run"):
             "run_gp": gp,
             "simulated_grid": simulated_grid,
             "comparison_grid": comparison_grid,
-            "stats": stats
+            "stats": stats,
+            "stats_dict": stats_dict,
+            "chat_history": []
         })
 
 
@@ -75,7 +81,7 @@ if (
     stats = st.session_state.stats
     n = st.session_state.n
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Simulated results", "Position Analysis","Driver Analysis", "Data"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Simulated results", "Position Analysis","Driver Analysis", "AI analysis", "Data"])
 
     # Simulated results
     with tab1:
@@ -95,7 +101,7 @@ if (
             st.markdown(f"Real P{pos} qualifier: {match[0]}")
 
         fig = position_probability_plot(st.session_state.df, session, st.session_state.n, pos)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     
     # Driver probability distribution plot
     with tab3:
@@ -109,10 +115,38 @@ if (
             st.markdown(f"Real qualifying position: P{int(position)}.")
 
         fig = expected_position(st.session_state.df, session, driver, abbr, st.session_state.n)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
+
+    # AI analysis
+    with tab4:
+        st.markdown("Ask AI about anything")
+
+        # Initialise chat history if not present
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+
+        # Render existing messages
+        for message in st.session_state.chat_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Handle new input
+        user_input = st.chat_input("Ask about the qualifying session...")
+
+        if user_input:
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+            with st.spinner("Thinking..."):
+                response = get_chat_response(
+                    st.session_state.chat_history,
+                    build_system_prompt(st.session_state.stats_dict, session)
+                )
+
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
+            st.rerun()
 
     # Data
-    with tab4:
+    with tab5:
         # Rename column headers to P1, P2 etc.
         st.markdown("This table shows the probability (0 - 1) of a driver qualifying in each position.")
         st.dataframe(st.session_state.df.rename(columns=lambda x: f"P{x}"))
