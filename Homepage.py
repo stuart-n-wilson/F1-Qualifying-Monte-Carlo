@@ -5,6 +5,7 @@ st.sidebar.success('Please select a page above.')
 # Title section ---
 st.title('🏎️ F1 Qualifying Simulator')
 st.markdown("A Monte Carlo simulation of Formula 1 qualifying sessions.")
+st.info("Head over to the Qualifying simulator page (on the left) to get started.", icon="ℹ️")
 
 st.divider()
 
