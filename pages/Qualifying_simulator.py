@@ -5,13 +5,11 @@ import pandas as pd
 import os
 from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
-from utils.plotting import position_probability_plot, expected_position, colour_grid_change
-from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid
+from utils.plotting import position_probability_plot, expected_position
+from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid, colour_grid_change
 
 os.makedirs("fastf1_cache", exist_ok=True)
 f1.Cache.enable_cache("fastf1_cache")
-
-# f1.set_log_level('ERROR')
 
 
 # Title section ---
@@ -23,11 +21,11 @@ st.divider()
 st.subheader("Choose a Qualifying session")
 
 # User inputs to choose session ---
-year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=2026)
+year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=dt.now().year)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
-# Load session 
+# Load session and cache ---
 @st.cache_data(show_spinner="Downloading the data...")
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
@@ -37,7 +35,7 @@ def load_session(year, gp):
 session = load_session(year, gp)
 
 # Additional user inputs ---
-n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=500)
+n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=1500)
 
 st.divider()
 
@@ -61,7 +59,6 @@ if st.button("Run"):
             "stats": stats
         })
 
-st.divider()
 
 if (
     "df" in st.session_state
@@ -69,6 +66,7 @@ if (
     and st.session_state.get("run_gp") == gp
     ):
 
+    st.divider()
     st.subheader("Simulation Results")
 
     # Call variables from session state, usuable across all tabs.
@@ -96,7 +94,7 @@ if (
         else:
             st.markdown(f"Real P{pos} qualifier: {match[0]}")
 
-        fig = position_probability_plot(st.session_state.df, session, pos, st.session_state.n)
+        fig = position_probability_plot(st.session_state.df, session, st.session_state.n, pos)
         st.plotly_chart(fig, use_container_width=True)
     
     # Driver probability distribution plot
@@ -122,7 +120,10 @@ if (
         st.markdown("This table contains statistics based on the position probabilities table, and simulated results.")
         st.dataframe(merge_stats_comparison_grid(stats, comparison_grid))
 
-
 # Display message if session changes that simulation must be rerun.
 elif "df" in st.session_state:
     st.info("Session changed — click Run to generate results for the selected qualifying session.", icon="ℹ️")
+
+st.divider()
+
+st.markdown("Created by **Stuart Wilson** · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson)")
