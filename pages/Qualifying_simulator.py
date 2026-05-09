@@ -15,7 +15,6 @@ f1.Cache.enable_cache("fastf1_cache")
 # Title section ---
 st.title('F1 Qualifying Position Simulator')
 st.text('Select a qualifying session and then run thousands of simulations to see where drivers qualify.')
-st.info("Head over to the Qualifying simulator page (on the left) to get started.", icon="ℹ️")
 
 st.divider()
 
