@@ -117,6 +117,7 @@ numerical errors and incorrect interpretations, the context is constructed from 
 summary for each driver that contains driver info and statistics dervied from the probability matrix.
 
 **Hallucination prevention**
+
 An application such as this, with specific data generating insights, is very perceptible to
 hallucination. The model is explicity instructed to only used data provided in the prompt - this
 prompt contains detailed instructions alongside the formatted driver summaries. This does reduce
