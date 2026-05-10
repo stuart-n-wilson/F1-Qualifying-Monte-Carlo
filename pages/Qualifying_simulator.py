@@ -34,11 +34,7 @@ def load_session(year, gp):
     session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
-if "session_loaded" not in st.session_state:
-    with st.spinner("Loading session data..."):
-        session = load_session(year, gp)
-    st.session_state.session_loaded = True
-else:
+with st.spinner("Loading session data..."):
     session = load_session(year, gp)
 
 # Additional user inputs ---
