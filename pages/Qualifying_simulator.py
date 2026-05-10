@@ -5,7 +5,7 @@ import pandas as pd
 import os
 from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
-from utils.plotting import position_probability_plot, expected_position
+from utils.plotting import position_probability_plot, expected_position, position_change_bump
 from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid, colour_grid_change
 from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
@@ -29,7 +29,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 # Load session and cache ---
-@st.cache_data(show_spinner="Downloading the data...", hash_funcs={f1.core.Session: lambda s: (s.event.EventName, s.event.year)})
+@st.cache_data(show_spinner="Downloading the data...")
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
     session.load(laps=True, telemetry=False, weather=False, messages=False)
@@ -89,6 +89,9 @@ if (
         st.dataframe(colour_grid_change(comparison_grid.copy()))
         st.info("A real position may be 'None' if the driver did not qualify.", icon="ℹ️")
 
+        fig = position_change_bump(comparison_grid, session, n)
+        st.plotly_chart(fig, width='stretch')
+
     # Position probability distribution plot
     with tab2:
         pos = st.slider("Qualifying position", min_value=1, max_value=len(session.results), value=1)
@@ -120,6 +123,30 @@ if (
     # AI analysis
     with tab4:
         st.markdown("Ask AI about anything")
+
+
+        # Default prompt buttons — only show before conversation starts
+        if not st.session_state.chat_history:
+            st.markdown("**Try asking:**")
+            col1, col2, col3 = st.columns(3)
+
+            default_prompts = [
+                "What is Formula 1 qualifying?",
+                "Explain in a non-technical way how this app works.",
+                "Who was most likely to take pole position, and how confident is the simulation in that?"
+            ]
+
+            for col, prompt in zip([col1, col2, col3], default_prompts):
+                with col:
+                    if st.button(prompt, use_container_width=True):
+                        st.session_state.chat_history.append({"role": "user", "content": prompt})
+                        with st.spinner("Thinking..."):
+                            response = get_chat_response(
+                                st.session_state.chat_history,
+                                build_system_prompt(st.session_state.stats_dict, session)
+                            )
+                        st.session_state.chat_history.append({"role": "assistant", "content": response})
+                        st.rerun()
 
         # Initialise chat history if not present
         if "chat_history" not in st.session_state:

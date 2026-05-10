@@ -102,7 +102,6 @@ at the end of Q1 and Q2, rather than 5; all calculations account for this.
 **External factors** such as weather, tyre compounds/degredation are not considered.
 """)
 
-
 st.divider()
 
 st.markdown("Created by **Stuart Wilson** · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson)")
