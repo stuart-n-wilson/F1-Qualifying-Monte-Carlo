@@ -47,7 +47,7 @@ def get_chat_response(chat_history, system_prompt):
     role_map = {"assistant": "model", "user": "user"}
 
     response = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}",
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={api_key}",
         json={
             "system_instruction": {"parts": [{"text": system_prompt}]},
             "contents": [
