@@ -39,7 +39,7 @@ def compare_grid(sim_grid, session):
     df = df.rename(columns={'SimPosition': 'Simulated position', 'Position': 'Real position'})
 
     # Reoder cols
-    df = df[['Driver Name', 'Team', 'Simulated position', 'Real position', 'Position change']]
+    df = df[['Driver Name', 'Team', 'Real position', 'Simulated position', 'Position change']]
 
     return df
 
