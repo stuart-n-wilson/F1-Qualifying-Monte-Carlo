@@ -104,6 +104,28 @@ at the end of Q1 and Q2, rather than 5; all calculations account for this.
 
 st.divider()
 
+# LLM
+st.subheader("LLM integration")
+st.markdown("""
+The simulator includes an AI chat interface that allows users to ask questions about the simulation results. 
+The model used is **Gemini 2.5 Flash Lite**, accessed via Google AI studio.
+            
+**Context**
+
+Rather than directly passing the probability matrix into the model, which would highly likely cause
+numerical errors and incorrect interpretations, the context is constructed from a natural language      
+summary for each driver that contains driver info and statistics dervied from the probability matrix.
+
+**Hallucination prevention**
+An application such as this, with specific data generating insights, is very perceptible to
+hallucination. The model is explicity instructed to only used data provided in the prompt - this
+prompt contains detailed instructions alongside the formatted driver summaries. This does reduce
+the model's flexibility, but is necessary for ensuring responses that are grounded in the data.
+The prompt is rebuilt on every API call to prevent data leakage from one simulation to the next.
+""")
+
+st.divider()
+
 st.markdown("Created by **Stuart Wilson** · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson)")
 
 
