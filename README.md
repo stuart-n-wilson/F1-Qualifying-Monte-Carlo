@@ -91,5 +91,3 @@ Python · FastF1 · NumPy · SciPy · Pandas · Plotly · Streamlit · Gemini AP
    ```bash
    streamlit run Homepage.py
    ```
-
----
