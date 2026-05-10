@@ -80,7 +80,7 @@ From each subsession, laps are filtered to quick laps (using `.pick_quicklaps()`
 laps (e.g. in/out laps, incomplete laps, cool-down laps) before fitting the distributions to each driver.
         
 Using `.split_qualifying_sessions()`, statistics are calculated for each subsession individually.
-Additionally, sessions are cached using `fastf1.cache` and `st.cache_data` to reduce downloads to only once per
+Additionally, sessions are cached using `fastf1.cache` to reduce downloads to only once per
 session.
 """)
 
