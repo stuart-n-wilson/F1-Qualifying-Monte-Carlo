@@ -38,6 +38,7 @@ Select any Grand Prix qualifying session from 2018 to present, choose the number
 - Derive the most probable full grid using the Hungarian algorithm
 - Compare the simulated grid against the real qualifying result
 - Create visualisations to analyse each driver or position
+- Load up a chat session with Google Gemini, so you can ask questions about the app or results.
 """)
 
 st.divider()
