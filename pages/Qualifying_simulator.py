@@ -122,8 +122,8 @@ if (
 
     # AI analysis
     with tab4:
-        st.markdown("Ask AI about anything")
-
+        st.markdown("Ask AI about anything related to this app (please be conscious that this is using a free tier of Google AI studio," \
+        "so token limits may restrict usage.)")
 
         # Default prompt buttons — only show before conversation starts
         if not st.session_state.chat_history:
