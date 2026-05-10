@@ -30,6 +30,9 @@ st.subheader("Stastical assumptions")
 st.markdown("""
 **Lap times are normally distributed.** This is a simplifying assumption and is supported by the fact that only
 quick laps are used in the approximation.
+        
+**Independence between laps** is a necessary for sampling, but slightly unrealistic assumption - in real life, drivers
+learn more about where they can gain lap time every single time they drive, so subsequent laps are usually faster.
             
 **Expected position and position variance** are derived from the probability matrix produced by the repeated
 simulations. For a driver $$i$$, with probabililty $$p_{i,k}$$ of finishing in position $$k$$:
@@ -102,6 +105,28 @@ at the end of Q1 and Q2, rather than 5; all calculations account for this.
 **External factors** such as weather, tyre compounds/degredation are not considered.
 """)
 
+st.divider()
+
+# LLM
+st.subheader("LLM integration")
+st.markdown("""
+The simulator includes an AI chat interface that allows users to ask questions about the simulation results. 
+The model used is **Gemini 2.5 Flash Lite**, accessed via Google AI studio.
+            
+**Context**
+
+Rather than directly passing the probability matrix into the model, which would highly likely cause
+numerical errors and incorrect interpretations, the context is constructed from a natural language      
+summary for each driver that contains driver info and statistics dervied from the probability matrix.
+
+**Hallucination prevention**
+
+An application such as this, with specific data generating insights, is very perceptible to
+hallucination. The model is explicity instructed to only used data provided in the prompt - this
+prompt contains detailed instructions alongside the formatted driver summaries. This does reduce
+the model's flexibility, but is necessary for ensuring responses that are grounded in the data.
+The prompt is rebuilt on every API call to prevent data leakage from one simulation to the next.
+""")
 
 st.divider()
 
