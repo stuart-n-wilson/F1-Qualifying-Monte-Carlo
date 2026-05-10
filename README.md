@@ -66,7 +66,7 @@ F1-Qualifying-Monte-Carlo-Simulator/
 
 ## 📝 Limitations/assumptions
 
-- Lap times are normally distributed.
+- Lap times are normally distributed
 - Limited to 2018 onwards as previous data is unavailable.
 - Assumes independence between laps.
 - No external factors (weather, track evolution etc) are considered.
