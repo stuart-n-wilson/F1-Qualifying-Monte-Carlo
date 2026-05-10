@@ -130,6 +130,79 @@ def expected_position(df, session, driver, abbr, n):
 
     return fig
 
-def sankey_position_map():
-    # Coming soon...
-    pass
+def position_change_bump(comparison_grid, session, n):
+    """
+    Input: comparison_grid from compare_grid(), session, n simulations.
+
+    Creates a bump chart mapping each driver's real qualifying position
+    to their simulated position, coloured by team.
+
+    Output: Bump chart fig.
+    """
+    df = comparison_grid.copy()
+    driver_colours = _get_driver_colours(session)
+
+    fig = go.Figure()
+
+    for abbr, row in df.iterrows():
+        real_pos = row['Real position']
+        sim_pos  = int(row['Simulated position'])
+        colour   = driver_colours.get(abbr, '#888888')
+
+        y_real = real_pos if pd.notna(real_pos) else len(df) + 1
+
+        fig.add_scatter(
+            x=[0, 1],
+            y=[y_real, sim_pos],
+            mode='lines+markers',
+            line=dict(color=colour, width=2),
+            marker=dict(color=colour, size=8),
+            name=row['Driver Name'],
+            hovertemplate=f"<b>{row['Driver Name']}</b><br>Real: {'P' + str(int(y_real)) if pd.notna(real_pos) else 'DNS'}<br>Simulated: P{sim_pos}<extra></extra>",
+            yaxis="y1"
+        )
+
+    # Position labels on the right
+    fig.add_scatter(
+        x=[1.05] * len(df),
+        y=list(range(1, len(df) + 1)),
+        mode='text',
+        text=[f"P{i}" for i in range(1, len(df) + 1)],
+        textposition='middle right',
+        textfont=dict(size=11),
+        hoverinfo='skip',
+        showlegend=False
+    )
+
+    fig.update_layout(
+        title={
+            "text": f"Real vs Simulated Grid — {n} simulations",
+            "x": 0.5,
+            "xanchor": "center"
+        },
+        title_font=dict(size=20),
+        title_subtitle_text=f"{session.event.EventName} {session.event.year}",
+        title_subtitle_font=dict(size=14),
+        xaxis=dict(
+            tickvals=[0, 1],
+            ticktext=["Real", "Simulated"],
+            showgrid=False,
+            range=[-0.05, 1.2],
+            showline = False,
+            mirror = False
+        ),
+        yaxis=dict(
+            autorange="reversed",
+            tickvals=list(range(1, len(df) + 1)),
+            ticktext=[f"P{i}" for i in range(1, len(df) + 1)],
+            showgrid=False,
+            gridwidth=1,
+            mirror = False,
+            showline = False,
+            zeroline = False
+        ),
+        showlegend=False,
+        margin=dict(t=90, l=60, r=80)
+    )
+
+    return fig
