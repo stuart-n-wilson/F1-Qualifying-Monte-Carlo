@@ -103,6 +103,10 @@ if (
         else:
             st.markdown(f"Real P{pos} qualifier: {match[0]}")
 
+        sim_match = comparison_grid.loc[comparison_grid['Simulated position'] == pos, 'Driver Name'].values
+        if len(sim_match) > 0:
+            st.markdown(f"Simulated P{pos} qualifier: {sim_match[0]}")
+
         fig = position_probability_plot(st.session_state.df, session, st.session_state.n, pos)
         st.plotly_chart(fig, width='stretch')
     
@@ -116,7 +120,10 @@ if (
             st.markdown("Real qualifying position: did not qualify.")
         else:
             st.markdown(f"Real qualifying position: P{int(position)}.")
-
+            
+        sim_position = comparison_grid.loc[abbr, 'Simulated position']
+        st.markdown(f"Simulated qualifying position: P{int(sim_position)}.")
+        
         fig = expected_position(st.session_state.df, session, driver, abbr, st.session_state.n)
         st.plotly_chart(fig, width='stretch')
 
