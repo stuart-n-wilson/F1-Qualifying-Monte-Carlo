@@ -32,7 +32,7 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 @st.cache_data(show_spinner="Downloading the data...", hash_funcs={f1.core.Session: lambda s: (s.event.EventName, s.event.year)})
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
-    session.load(laps=True, results=True, telemetry=False, weather=False, messages=False)
+    session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
 session = load_session(year, gp)
