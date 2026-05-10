@@ -8,7 +8,7 @@ A Monte Carlo simulation of Formula 1 qualifying sessions, built as a Data Scien
 
 ## 🚀 Overview
 
-In many decision-making contexts, a single point estimate is not just incomplete — it is misleading. This app replaces the single prediction with a probability distribution over every possible grid outcome, quantifying uncertainty rather than pretending it doesn't exist.
+Monte Carlo simulation is a technique that uses the randomness of real data, and repeats events accounting for this randomness. This app uses the randomness of the real lap times and simulates full qualifying sessions to find the probabilities of each driver qualifying in each position, and then works out a most probable finishing order.
 
 Select any Grand Prix qualifying session from 2018 to present, choose the number of simulations to run, and the app will:
 
@@ -93,5 +93,3 @@ Python · FastF1 · NumPy · SciPy · Pandas · Plotly · Streamlit · Gemini AP
    ```
 
 ---
-
-Built by **Stuart Wilson** · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson) · Actively looking for Junior Data Science roles
