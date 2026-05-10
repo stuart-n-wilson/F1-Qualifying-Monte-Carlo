@@ -113,7 +113,6 @@ def build_system_prompt(stats_dict, session):
         str: The complete system prompt, ready to be passed to the LLM as
              the system parameter.
     """
-    
     event=session.event.EventName
     year = session.event.year
 
