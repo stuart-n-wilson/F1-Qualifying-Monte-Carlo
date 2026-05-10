@@ -29,13 +29,13 @@ gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=Fals
 
 
 # Load session and cache ---
-@st.cache_data(show_spinner="Downloading the data...", hash_funcs={f1.core.Session: lambda s: (s.event.EventName, s.event.year)})
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
     session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
-session = load_session(year, gp)
+with st.spinner("Loading session data..."):
+    session = load_session(year, gp)
 
 # Additional user inputs ---
 n = st.number_input("Monte Carlo simulations", min_value=1, max_value=5000, value=1500)
