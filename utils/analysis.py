@@ -1,6 +1,6 @@
 # Internal helper functions ---
 
-def real_results(session):
+def _real_results(results):
     """ Helper function to extract and clean official session results.
 
     Formats the FastF1 session results to use the driver abbreviation as the 
@@ -13,11 +13,13 @@ def real_results(session):
         pd.DataFrame: Cleaned results indexed by abbreviation (e.g., HAM).
                       Columns: 'Driver Name', 'Team', 'Position'.
     """
-    return session.results.set_index('Abbreviation').rename(columns={'TeamName': 'Team', 'FullName':'Driver Name'}).rename_axis('Driver')[['Driver Name', 'Team', 'Position']]
+    return results.set_index('Abbreviation').rename(
+        columns={'TeamName': 'Team', 'FullName': 'Driver Name'}
+    ).rename_axis('Driver')[['Driver Name', 'Team', 'Position']]
 
 # Public functions ---
 
-def compare_grid(sim_grid, session):
+def compare_grid(sim_grid, results):
     """ Calculates the delta between the simulated grid and true qualifying results.
 
     Joins the simulated grid DataFrame with real-world results on the driver 
@@ -32,16 +34,13 @@ def compare_grid(sim_grid, session):
                       and the calculated 'Position change'.
     """
     # Join sim_grid and real session results on Abbreviation
-    df = sim_grid.merge(real_results(session), left_index=True, right_index=True)
+    df = sim_grid.merge(_real_results(results), left_index=True, right_index=True)
 
     df['Position change'] = df['Position'] - df['SimPosition']
 
     df = df.rename(columns={'SimPosition': 'Simulated position', 'Position': 'Real position'})
 
-    # Reoder cols
-    df = df[['Driver Name', 'Team', 'Real position', 'Simulated position', 'Position change']]
-
-    return df
+    return df[['Driver Name', 'Team', 'Real position', 'Simulated position', 'Position change']]
 
 def colour_grid_change(df):
     """ Internal UI helper to format and color-code position changes.
