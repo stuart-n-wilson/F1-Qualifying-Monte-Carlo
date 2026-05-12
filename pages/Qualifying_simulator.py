@@ -57,27 +57,53 @@ except DataNotLoadedError:
     st.info("This often happens due to API rate limits or if the session data isn't ready. "
              "Try refreshing or selecting a different year.")
 
-# Run simulation ---
+
 if data_successfully_loaded:
     if st.button("Run"):
         with st.spinner("Running the simulation..."):
+            try:
+                df, simulated_grid = run_full_monte_carlo(session, n)
+                comparison_grid = compare_grid(simulated_grid, session)
+                stats = get_probability_stats(df, year)
+                stats_dict = build_llm_context(df, simulated_grid, session, year)
+
+                st.session_state.update({
+                    "df": df,
+                    "n": n,
+                    "run_year": year,
+                    "run_gp": gp,
+                    "simulated_grid": simulated_grid,
+                    "comparison_grid": comparison_grid,
+                    "stats": stats,
+                    "stats_dict": stats_dict,
+                    "chat_history": []
+                })
+            except DataNotLoadedError:
+                st.cache_data.clear()
+                st.warning("Session data was lost during caching — clearing cache and reloading. Please click Run again.")
+                st.rerun()
+
+# # Run simulation ---
+# if data_successfully_loaded:
+#     if st.button("Run"):
+#         with st.spinner("Running the simulation..."):
     
-            df, simulated_grid = run_full_monte_carlo(session, n)
-            comparison_grid = compare_grid(simulated_grid, session)
-            stats = get_probability_stats(df, year)
-            stats_dict = build_llm_context(df, simulated_grid, session, year)
+#             df, simulated_grid = run_full_monte_carlo(session, n)
+#             comparison_grid = compare_grid(simulated_grid, session)
+#             stats = get_probability_stats(df, year)
+#             stats_dict = build_llm_context(df, simulated_grid, session, year)
     
-            st.session_state.update({
-                "df": df,
-                "n": n,
-                "run_year": year,
-                "run_gp": gp,
-                "simulated_grid": simulated_grid,
-                "comparison_grid": comparison_grid,
-                "stats": stats,
-                "stats_dict": stats_dict,
-                "chat_history": []
-            })
+#             st.session_state.update({
+#                 "df": df,
+#                 "n": n,
+#                 "run_year": year,
+#                 "run_gp": gp,
+#                 "simulated_grid": simulated_grid,
+#                 "comparison_grid": comparison_grid,
+#                 "stats": stats,
+#                 "stats_dict": stats_dict,
+#                 "chat_history": []
+#             })
 
 
 if (
