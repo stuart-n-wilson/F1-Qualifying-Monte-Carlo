@@ -3,7 +3,6 @@ import streamlit as st
 import fastf1 as f1
 import pandas as pd
 import os
-import threading
 from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
 from utils.plotting import position_probability_plot, expected_position, position_change_bump
@@ -11,12 +10,9 @@ from utils.analysis import compare_grid, get_probability_stats, merge_stats_comp
 from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
 from llm.api import get_chat_response
-from fastf1.exceptions import DataNotLoadedError
 
-cache_dir = 'fastf1_cache'
-if not os.path.exists(cache_dir):
-    os.makedirs(cache_dir)
-f1.Cache.enable_cache(cache_dir)
+os.makedirs("fastf1_cache", exist_ok=True)
+f1.Cache.enable_cache("fastf1_cache")
 
 
 # Title section ---
@@ -31,7 +27,9 @@ st.subheader("Choose a Qualifying session")
 year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=dt.now().year)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
-@st.cache_data(show_spinner="Loading session data...")
+
+# Load session and cache ---
+@st.cache_data(show_spinner="Downloading the data...", hash_funcs={f1.core.Session: lambda s: (s.event.EventName, s.event.year)})
 def load_session(year, gp):
     session = f1.get_session(year, gp, 'Q')
     session.load(laps=True, telemetry=False, weather=False, messages=False)
@@ -46,53 +44,26 @@ st.divider()
 
 st.subheader("Run the simulation")
 
-data_successfully_loaded = False
-
-try:
-    # Attempting to access .laps will check if data exists
-    if not session.laps.empty:
-        data_successfully_loaded = True
-except DataNotLoadedError: 
-    st.error("The F1 data servers are currently not responding with timing data.")
-    st.info("This often happens due to API rate limits or if the session data isn't ready. "
-             "Try refreshing or selecting a different year.")
-
-
 # Run simulation ---
-if data_successfully_loaded:
-    if st.button("Run"):
-        with st.spinner("Running the simulation..."):
-            try:
-                df, simulated_grid = run_full_monte_carlo(session, n)
-                comparison_grid = compare_grid(simulated_grid, session)
-                stats = get_probability_stats(df, year)
-                stats_dict = build_llm_context(df, simulated_grid, session, year)
+if st.button("Run"):
+    with st.spinner("Running the simulation..."):
 
-                st.session_state.update({
-                    "df": df,
-                    "n": n,
-                    "run_year": year,
-                    "run_gp": gp,
-                    "simulated_grid": simulated_grid,
-                    "comparison_grid": comparison_grid,
-                    "stats": stats,
-                    "stats_dict": stats_dict,
-                    "chat_history": []
-                })
+        df, simulated_grid = run_full_monte_carlo(session, n)
+        comparison_grid = compare_grid(simulated_grid, session)
+        stats = get_probability_stats(df, year)
+        stats_dict = build_llm_context(df, simulated_grid, session, year)
 
-            except DataNotLoadedError:
-                st.cache_data.clear()
-                st.warning(
-                    "The session data was not available — this can happen under high load. "
-                    "The cache has been cleared. Please click **Run** again or try a different Grand Prix.",
-                    icon="⚠️"
-                )
-else:
-    st.info(
-        "Timing data for this session could not be loaded from the F1 API. "
-        "Please try a different Grand Prix or refresh the page.",
-        icon="ℹ️"
-    )
+        st.session_state.update({
+            "df": df,
+            "n": n,
+            "run_year": year,
+            "run_gp": gp,
+            "simulated_grid": simulated_grid,
+            "comparison_grid": comparison_grid,
+            "stats": stats,
+            "stats_dict": stats_dict,
+            "chat_history": []
+        })
 
 
 if (
@@ -131,7 +102,7 @@ if (
             st.markdown(f"Real P{pos} qualifier: No driver qualified in this position")
         else:
             st.markdown(f"Real P{pos} qualifier: {match[0]}")
-
+        
         sim_match = comparison_grid.loc[comparison_grid['Simulated position'] == pos, 'Driver Name'].values
         if len(sim_match) > 0:
             st.markdown(f"Simulated P{pos} qualifier: {sim_match[0]}")
@@ -149,16 +120,16 @@ if (
             st.markdown("Real qualifying position: did not qualify.")
         else:
             st.markdown(f"Real qualifying position: P{int(position)}.")
-            
+        
         sim_position = comparison_grid.loc[abbr, 'Simulated position']
         st.markdown(f"Simulated qualifying position: P{int(sim_position)}.")
-        
+
         fig = expected_position(st.session_state.df, session, driver, abbr, st.session_state.n)
         st.plotly_chart(fig, width='stretch')
 
     # AI analysis
     with tab4:
-        st.markdown("Ask AI about anything related to this app (please be conscious that this is using a free tier of Google AI studio, " \
+        st.markdown("Ask AI about anything related to this app (please be conscious that this is using a free tier of Google AI studio," \
         "so token limits may restrict usage.)")
 
         # Default prompt buttons — only show before conversation starts
