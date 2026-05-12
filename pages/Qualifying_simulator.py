@@ -29,14 +29,10 @@ st.subheader("Choose a Qualifying session")
 year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=dt.now().year)
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
-
-_session_lock = threading.Lock()
-
-@st.cache_resource(show_spinner="Loading session data...")
+@st.cache_data(show_spinner="Loading session data...")
 def load_session(year, gp):
-    with _session_lock:
-        session = f1.get_session(year, gp, 'Q')
-        session.load(laps=True, telemetry=False, weather=False, messages=False)
+    session = f1.get_session(year, gp, 'Q')
+    session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
 session = load_session(year, gp)
