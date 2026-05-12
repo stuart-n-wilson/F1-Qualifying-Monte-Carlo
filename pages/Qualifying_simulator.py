@@ -14,7 +14,7 @@ from llm.api import get_chat_response
 
 # os.makedirs("fastf1_cache", exist_ok=True)
 # f1.Cache.enable_cache("fastf1_cache")
-f1.Cache.disabled()
+f1.Cache.set_disabled()
 
 
 # Title section ---
