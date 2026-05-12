@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import pandas as pd
 
-def _get_driver_colours(session):
+def _get_driver_colours(results):
     """ Helper function to create a mapping of driver abbreviations to team colours.
 
     Extracts team colours from the FastF1 session results and ensures they are 
@@ -14,10 +14,12 @@ def _get_driver_colours(session):
         dict: A dictionary where keys are driver abbreviations (e.g., 'HAM') 
               and values are hex color strings (e.g., '#00d2be').
     """
-    return {abbr: f"#{colour}" for abbr, colour in 
-            session.results.set_index('Abbreviation')['TeamColor'].items()}
+    return {
+        abbr: f"#{colour}" if pd.notna(colour) else "#888888"
+        for abbr, colour in results.set_index('Abbreviation')['TeamColor'].items()
+    }
 
-def position_probability_plot(df, session, n, pos=1): 
+def position_probability_plot(df, results, event, n, pos=1):
     """ Creates a bar chart showing driver probabilities for a specific grid position.
 
     Visualises which drivers are most likely to qualify in the selected position (e.g. P1).
@@ -32,8 +34,8 @@ def position_probability_plot(df, session, n, pos=1):
     Returns:
         go.Figure: A Plotly bar figure showing probability distribution for the given position.
     """
-    driver_names = session.results.set_index('Abbreviation')['FullName'].to_dict()
-    driver_colours = _get_driver_colours(session)
+    driver_names = results.set_index('Abbreviation')['FullName'].to_dict()
+    driver_colours = _get_driver_colours(results)
     
     data = df[pos].reset_index()
     data.columns = ["Driver", "Probability"]
@@ -58,7 +60,7 @@ def position_probability_plot(df, session, n, pos=1):
             "xanchor": "center"
         },
         title_font=dict(size=20),
-        title_subtitle_text=f"{session.event.EventName} {session.event.year}",
+        title_subtitle_text=f"{event.EventName} {event.year}",
         title_subtitle_font=dict(size=14),
         xaxis_title="Driver",
         yaxis_title="Probability (%)",
@@ -75,7 +77,7 @@ def position_probability_plot(df, session, n, pos=1):
 
     return fig
 
-def expected_position(df, session, driver, abbr, n):
+def expected_position(df, results, event, driver, abbr, n):
     """ Creates a bar chart of a specific driver's probability across all positions.
 
     Provides a visual position probability distribution for each driver.
@@ -90,7 +92,7 @@ def expected_position(df, session, driver, abbr, n):
     Returns:
         go.Figure: A Plotly bar figure showing the driver's probability per position.
     """
-    driver_colours = _get_driver_colours(session)
+    driver_colours = _get_driver_colours(results)
 
     # Data
     row = df.loc[abbr]
@@ -115,7 +117,7 @@ def expected_position(df, session, driver, abbr, n):
             "xanchor": "center"
         },
         title_font=dict(size=20),
-        title_subtitle_text=f"{session.event.EventName} {session.event.year}",
+        title_subtitle_text=f"{event.EventName} {event.year}",
         title_subtitle_font=dict(size=14),
         xaxis_title="Position",
         yaxis_title="Probability (%)",
@@ -130,7 +132,7 @@ def expected_position(df, session, driver, abbr, n):
 
     return fig
 
-def position_change_bump(comparison_grid, session, n):
+def position_change_bump(comparison_grid, results, event, n):
     """
     Input: comparison_grid from compare_grid(), session, n simulations.
 
@@ -140,7 +142,7 @@ def position_change_bump(comparison_grid, session, n):
     Output: Bump chart fig.
     """
     df = comparison_grid.copy()
-    driver_colours = _get_driver_colours(session)
+    driver_colours = _get_driver_colours(results)
 
     fig = go.Figure()
 
@@ -181,7 +183,7 @@ def position_change_bump(comparison_grid, session, n):
             "xanchor": "center"
         },
         title_font=dict(size=20),
-        title_subtitle_text=f"{session.event.EventName} {session.event.year}",
+        title_subtitle_text=f"{event.EventName} {event.year}",
         title_subtitle_font=dict(size=14),
         xaxis=dict(
             tickvals=[0, 1],
