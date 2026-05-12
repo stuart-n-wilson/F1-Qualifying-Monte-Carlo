@@ -97,7 +97,7 @@ Driver: {stats['Driver Name']}
 - Uncertainty (standard deviation): {stats['std']:.2f}
 """
 
-def build_system_prompt(stats_dict, session):
+def build_system_prompt(stats_dict, event):
     """Builds the system prompt for the LLM chat interface.
 
     Combines a static instruction template with a formatted summary of each
@@ -113,15 +113,14 @@ def build_system_prompt(stats_dict, session):
         str: The complete system prompt, ready to be passed to the LLM as
              the system parameter.
     """
-    event=session.event.EventName
-    year = session.event.year
+    event_name = event.EventName
+    year = event.year
 
-    intro = _SYSTEM_PROMPT_TEMPLATE.format(event=event, year=year)
+    intro = _SYSTEM_PROMPT_TEMPLATE.format(event=event_name, year=year)
 
     # Iterate over the drivers and join the formatted prompts.
     driver_summaries = "\n".join(
         format_driver_data(abbr, stats_dict)
         for abbr in stats_dict
     )
-
     return (intro + driver_summaries).strip()
