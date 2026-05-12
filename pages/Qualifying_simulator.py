@@ -3,6 +3,7 @@ import streamlit as st
 import fastf1 as f1
 import pandas as pd
 import os
+import threading
 from datetime import datetime as dt
 from simulation.simulator import run_full_monte_carlo
 from utils.plotting import position_probability_plot, expected_position, position_change_bump
@@ -29,10 +30,13 @@ year = st.slider("Year", min_value=2018, max_value=dt.now().year, value=dt.now()
 gp = st.selectbox("Grand Prix", f1.get_event_schedule(year, include_testing=False).loc[lambda df: df["EventDate"] <= pd.Timestamp.today(), "EventName"].to_list())
 
 
+_session_lock = threading.Lock()
+
 @st.cache_resource(show_spinner="Loading session data...")
 def load_session(year, gp):
-    session = f1.get_session(year, gp, 'Q')
-    session.load(laps=True, telemetry=False, weather=False, messages=False)
+    with _session_lock:
+        session = f1.get_session(year, gp, 'Q')
+        session.load(laps=True, telemetry=False, weather=False, messages=False)
     return session
 
 session = load_session(year, gp)
