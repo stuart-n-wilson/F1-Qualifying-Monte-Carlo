@@ -11,8 +11,9 @@ from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
 from llm.api import get_chat_response
 
-os.makedirs("fastf1_cache", exist_ok=True)
-f1.Cache.enable_cache("fastf1_cache")
+# os.makedirs("fastf1_cache", exist_ok=True)
+# f1.Cache.enable_cache("fastf1_cache")
+f1.Cache.disabled()
 
 
 # Title section ---
