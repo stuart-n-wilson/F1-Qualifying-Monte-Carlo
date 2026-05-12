@@ -30,7 +30,7 @@ st.subheader("Stastical assumptions")
 st.markdown("""
 **Lap times are normally distributed.** This is a simplifying assumption and is supported by the fact that only
 quick laps are used in the approximation.
-
+        
 **Independence between laps** is a necessary for sampling, but slightly unrealistic assumption - in real life, drivers
 learn more about where they can gain lap time every single time they drive, so subsequent laps are usually faster.
             
