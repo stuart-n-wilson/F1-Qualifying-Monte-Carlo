@@ -45,10 +45,20 @@ st.divider()
 
 st.subheader("Run the simulation")
 
+data_successfully_loaded = False
+
+try:
+    # Attempting to access .laps will check if data exists
+    if not session.laps.empty:
+        data_successfully_loaded = True
+except f1.core.DataNotLoadedError:
+    # If this hits, it means the API failed to provide data
+    st.error("The F1 data servers are currently not responding with timing data. "
+             "This can happen due to API rate limits or if the session data isn't ready yet.")
+    st.info("Try refreshing the page or selecting a different Grand Prix.")
+
 # Run simulation ---
-if session.laps.empty:
-    st.error("Could not retrieve lap data from the F1 servers. Please try again in a moment or select a different session.")
-else:
+if data_successfully_loaded:
     if st.button("Run"):
         with st.spinner("Running the simulation..."):
     
