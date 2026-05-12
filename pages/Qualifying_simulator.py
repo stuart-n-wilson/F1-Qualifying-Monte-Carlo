@@ -11,6 +11,7 @@ from utils.analysis import compare_grid, get_probability_stats, merge_stats_comp
 from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
 from llm.api import get_chat_response
+from fastf1.exceptions import DataNotLoadedError
 
 cache_dir = 'fastf1_cache'
 if not os.path.exists(cache_dir):
@@ -51,11 +52,10 @@ try:
     # Attempting to access .laps will check if data exists
     if not session.laps.empty:
         data_successfully_loaded = True
-except f1.core.DataNotLoadedError:
-    # If this hits, it means the API failed to provide data
-    st.error("The F1 data servers are currently not responding with timing data. "
-             "This can happen due to API rate limits or if the session data isn't ready yet.")
-    st.info("Try refreshing the page or selecting a different Grand Prix.")
+except DataNotLoadedError: 
+    st.error("The F1 data servers are currently not responding with timing data.")
+    st.info("This often happens due to API rate limits or if the session data isn't ready. "
+             "Try refreshing or selecting a different year.")
 
 # Run simulation ---
 if data_successfully_loaded:
