@@ -19,7 +19,7 @@ f1.Cache.enable_cache("fastf1_cache")
 st.title('F1 Qualifying Position Simulator')
 st.text('Select a qualifying session and then run thousands of simulations to see where drivers qualify.')
 st.warning(
-    """⚠️ This app fetches live F1 data from the FastF1 API, which is currently very unstable. If you are presented with
+    """This app fetches live F1 data from the FastF1 API, which is currently very unstable. If you are presented with
     an error message, try selecting a different Grand Prix session. Apologies, I am currently working on mitigating this issue.""",
     icon="⚠️"
 )
