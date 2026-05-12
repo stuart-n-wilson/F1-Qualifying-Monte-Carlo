@@ -5,7 +5,7 @@ from collections import defaultdict
 
 # Internal helper functions ---
 
-def _create_driver_session_stats(session):
+def _create_driver_session_stats(laps, results):
     """ Helper function to create stats for Q1, Q2 and Q3.
 
     Takes session object as input and then simulates each qualifying subsession with driver eliminates at each stage.
@@ -20,11 +20,10 @@ def _create_driver_session_stats(session):
         Indexed by abbreviation e.g. HAM.
         Column headers are mean, std, count.
     """
-    q1, q2, q3 = session.laps.split_qualifying_sessions()
+    q1, q2, q3 = laps.split_qualifying_sessions()
 
-    # List of all drivers in qualifying session.
     all_drivers = pd.Index(
-        session.results["Abbreviation"].dropna().unique(),
+        results["Abbreviation"].dropna().unique(),
         name="Driver"
     )
 
@@ -182,7 +181,7 @@ def _get_position_probability(position_counts, n):
 
     return position_probabilities
 
-def _monte_carlo_qualifying(session, n):
+def _monte_carlo_qualifying(laps, results, year, n):
     """ Orchestrates the full Monte Carlo simulation process.
 
     Extracts session data, runs the simulation loop, and calculates probabilities.
@@ -196,8 +195,8 @@ def _monte_carlo_qualifying(session, n):
                       containing the probability of that driver finishing in that position.
     """
     # Extract data
-    q1, q2, q3 = _create_driver_session_stats(session)
-    year = session.date.year
+    q1, q2, q3 = _create_driver_session_stats(laps, results)
+    position_counts = _count_positions(q1, q2, q3, year, n)
 
     # Run the loop
     position_counts = _count_positions(q1, q2, q3, year, n)
@@ -245,7 +244,7 @@ def _simulate_grid(df):
 
 # Public functions ---
 
-def run_full_monte_carlo(session, n):
+def run_full_monte_carlo(laps, results, year, n):
     """ The primary public entry point for the simulation engine.
 
     Wraps the Monte Carlo probability generation and the final grid assignment 
@@ -260,7 +259,7 @@ def run_full_monte_carlo(session, n):
                - prob_df: Full probability matrix.
                - sim_grid: The final predicted grid positions.
     """
-    prob_df = _monte_carlo_qualifying(session, n)
+    prob_df = _monte_carlo_qualifying(laps, results, year, n)
     sim_grid = _simulate_grid(prob_df)
 
     return prob_df, sim_grid
