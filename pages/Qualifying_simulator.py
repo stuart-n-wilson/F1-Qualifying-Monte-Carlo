@@ -12,9 +12,10 @@ from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
 from llm.api import get_chat_response
 
-# os.makedirs("fastf1_cache", exist_ok=True)
-# f1.Cache.enable_cache("fastf1_cache")
-f1.Cache.set_disabled()
+cache_dir = 'fastf1_cache'
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir)
+f1.Cache.enable_cache(cache_dir)
 
 
 # Title section ---
@@ -45,25 +46,28 @@ st.divider()
 st.subheader("Run the simulation")
 
 # Run simulation ---
-if st.button("Run"):
-    with st.spinner("Running the simulation..."):
-
-        df, simulated_grid = run_full_monte_carlo(session, n)
-        comparison_grid = compare_grid(simulated_grid, session)
-        stats = get_probability_stats(df, year)
-        stats_dict = build_llm_context(df, simulated_grid, session, year)
-
-        st.session_state.update({
-            "df": df,
-            "n": n,
-            "run_year": year,
-            "run_gp": gp,
-            "simulated_grid": simulated_grid,
-            "comparison_grid": comparison_grid,
-            "stats": stats,
-            "stats_dict": stats_dict,
-            "chat_history": []
-        })
+if session.laps.empty:
+    st.error("Could not retrieve lap data from the F1 servers. Please try again in a moment or select a different session.")
+else:
+    if st.button("Run"):
+        with st.spinner("Running the simulation..."):
+    
+            df, simulated_grid = run_full_monte_carlo(session, n)
+            comparison_grid = compare_grid(simulated_grid, session)
+            stats = get_probability_stats(df, year)
+            stats_dict = build_llm_context(df, simulated_grid, session, year)
+    
+            st.session_state.update({
+                "df": df,
+                "n": n,
+                "run_year": year,
+                "run_gp": gp,
+                "simulated_grid": simulated_grid,
+                "comparison_grid": comparison_grid,
+                "stats": stats,
+                "stats_dict": stats_dict,
+                "chat_history": []
+            })
 
 
 if (
