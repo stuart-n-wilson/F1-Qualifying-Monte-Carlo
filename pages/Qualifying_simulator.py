@@ -18,6 +18,8 @@ f1.Cache.enable_cache("fastf1_cache")
 # Title section ---
 st.title('F1 Qualifying Position Simulator')
 st.text('Select a qualifying session and then run thousands of simulations to see where drivers qualify.')
+st.warning('If you are presented with an error message, please try refreshing or selecting a different session - this is \
+known issue with data downloading that does not yet have a fix.')
 
 st.divider()
 
