@@ -9,7 +9,7 @@ from utils.plotting import position_probability_plot, expected_position, positio
 from utils.analysis import compare_grid, get_probability_stats, merge_stats_comparison_grid, colour_grid_change
 from llm.context import build_llm_context
 from llm.formatter import build_system_prompt
-from llm.api import get_chat_response
+from llm.api import get_chat_response, RateLimitError
 
 os.makedirs("fastf1_cache", exist_ok=True)
 f1.Cache.enable_cache("fastf1_cache")
@@ -155,12 +155,16 @@ if (
                 with col:
                     if st.button(prompt, use_container_width=True):
                         st.session_state.chat_history.append({"role": "user", "content": prompt})
-                        with st.spinner("Thinking..."):
-                            response = get_chat_response(
-                                st.session_state.chat_history,
-                                build_system_prompt(st.session_state.stats_dict, event)
-                            )
-                        st.session_state.chat_history.append({"role": "assistant", "content": response})
+                        try:
+                            with st.spinner("Thinking..."):
+                                response = get_chat_response(
+                                    st.session_state.chat_history,
+                                    build_system_prompt(st.session_state.stats_dict, event)
+                                )
+                            st.session_state.chat_history.append({"role": "assistant", "content": response})
+                        except RateLimitError as e:
+                            st.session_state.chat_history.pop()
+                            st.warning(str(e), icon="⚠️")
                         st.rerun()
 
         # Initialise chat history if not present
@@ -177,14 +181,16 @@ if (
 
         if user_input:
             st.session_state.chat_history.append({"role": "user", "content": user_input})
-
-            with st.spinner("Thinking..."):
-                response = get_chat_response(
-                    st.session_state.chat_history,
-                    build_system_prompt(st.session_state.stats_dict, event)
-                )
-
-            st.session_state.chat_history.append({"role": "assistant", "content": response})
+            try:
+                with st.spinner("Thinking..."):
+                    response = get_chat_response(
+                        st.session_state.chat_history,
+                        build_system_prompt(st.session_state.stats_dict, event)
+                    )
+                st.session_state.chat_history.append({"role": "assistant", "content": response})
+            except RateLimitError as e:
+                st.session_state.chat_history.pop()
+                st.warning(str(e), icon="⚠️")
             st.rerun()
 
     # Data

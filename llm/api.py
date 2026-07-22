@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
 
+class RateLimitError(Exception):
+    pass
+
 def get_chat_response(chat_history, system_prompt):
     """Sends the conversation history to the Gemini API and returns the assistant response.
 
@@ -30,8 +33,9 @@ def get_chat_response(chat_history, system_prompt):
         }
     )
 
+    if response.status_code in (429, 503):
+        raise RateLimitError("The AI service is temporarily busy. Please try again shortly.")
     if not response.ok:
-        st.error(response.json())
-        response.raise_for_status()
-
+        raise RateLimitError("The AI service is currently unavailable.")
+    
     return response.json()["candidates"][0]["content"]["parts"][0]["text"]
