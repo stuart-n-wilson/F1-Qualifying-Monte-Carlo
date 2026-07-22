@@ -196,7 +196,6 @@ def _monte_carlo_qualifying(laps, results, year, n):
     """
     # Extract data
     q1, q2, q3 = _create_driver_session_stats(laps, results)
-    position_counts = _count_positions(q1, q2, q3, year, n)
 
     # Run the loop
     position_counts = _count_positions(q1, q2, q3, year, n)
