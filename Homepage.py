@@ -55,4 +55,4 @@ st.info("Head to **Technical Notes** in the sidebar to read about the methodolog
 
 st.divider()
 
-st.markdown("Created by **Stuart Wilson** · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson) · Actively looking for Junior Data Science roles")
+st.markdown("Created by **Stuart Wilson** · [Website](https://stuart-n-wilson.github.io/) · [LinkedIn](https://www.linkedin.com/in/stuart-n-wilson/) · [GitHub](https://github.com/stuart-n-wilson)")
